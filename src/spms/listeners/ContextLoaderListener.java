@@ -1,31 +1,28 @@
 package spms.listeners;
 
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import spms.context.ApplicationContext;
 
-import spms.dao.MemberDAO;
-import spms.util.DBConnectionPool;
 
 public class ContextLoaderListener implements ServletContextListener {
-	DBConnectionPool connPool;
 
+	static ApplicationContext applicationContext;
+	
+	public static ApplicationContext getApplicationContext() {
+		return applicationContext;
+	}
+	
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		// TODO Auto-generated method stub
 		try {
 			ServletContext sc = event.getServletContext();
 			
-			connPool = new DBConnectionPool(
-					sc.getInitParameter("driver"),
-					sc.getInitParameter("url"),
-					sc.getInitParameter("username"),
-					sc.getInitParameter("password"));
-			
-			MemberDAO memberDao = new MemberDAO();
-			memberDao.setDbConnectionPool(connPool);
-			sc.setAttribute("memberDao", memberDao);
+			String propertiesPath = sc.getRealPath(
+					sc.getInitParameter("contextConfigLocation"));
+			applicationContext = new ApplicationContext(propertiesPath);
 		}catch(Throwable e) {
 			e.printStackTrace();
 		}
@@ -34,7 +31,6 @@ public class ContextLoaderListener implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent event) {
 		// TODO Auto-generated method stub
-		connPool.closeAll();
 	}
 
 

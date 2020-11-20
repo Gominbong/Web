@@ -24,8 +24,17 @@
 		<param-value>study</param-value>
 	</context-param>
 	
-
+	<resource-ref>
+		<res-ref-name>jdbc/studydb</res-ref-name>
+		<res-type>javax.sql.DataSource</res-type>
+		<res-auth>Container</res-auth>
+	</resource-ref>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>WEB-INF/application-context.properties</param-value>
+	</context-param>
 	<!-- 서블릿 선언 -->
+	
 	<servlet>
 		<servlet-name>MemberListServlet</servlet-name>
 		<servlet-class>spms.servlets.MemberListServlet</servlet-class>
@@ -64,6 +73,7 @@
 	</servlet>
 	
 	<!-- 서블릿을 URL과 연결 -->
+	
 	<servlet-mapping>
 		<servlet-name>MemberListServlet</servlet-name>
 		<url-pattern>/member/list</url-pattern>
