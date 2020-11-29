@@ -69,7 +69,7 @@
 			<tr>
 				<td>${member.no}</td>
 				<td><a href='update.do?no=${member.no}'>${member.name}</a></td>
-				<td>${member.email}</td>
+				<td><a href='update.do?no=${member.no}'>${member.email}</a></td>
 				<td>${member.createdDate}</td>
 				<td><a href='delete.do?no=${member.no}'>[삭제]</a></td>
 			</tr>
