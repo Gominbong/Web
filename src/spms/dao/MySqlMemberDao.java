@@ -1,179 +1,97 @@
 package spms.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
+
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
-import javax.sql.DataSource;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import spms.annotation.Component;
 import spms.vo.MemberDTO;
 @Component("memberDao")
 public class MySqlMemberDao implements MemberDao{
-	DataSource ds;
+	SqlSessionFactory sqlSessionFactory;
 
-	public void setDataSource(DataSource ds) {
-		this.ds=ds;
+	public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
+		this.sqlSessionFactory=sqlSessionFactory;
 	}
-
+	
+	
 	public MemberDTO exist(String email, String password) throws Exception {
-		Connection connection = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
+		HashMap<String,String> paramMap = new HashMap<String,String>();
+		paramMap.put("email",email);
+		paramMap.put("password", password);
+		
+		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
-			connection = ds.getConnection();	
-			stmt = connection.prepareStatement( 
-					  "SELECT MNAME,EMAIL FROM MEMBERS"
-				              + " WHERE EMAIL=? AND PWD=?");
-			stmt.setString(1, email);
-		    stmt.setString(2, password);
-		    rs = stmt.executeQuery();
-		    if(rs.next()) {
-		    	return new MemberDTO()
-		    			.setName(rs.getString("MNAME"))
-		    			.setEmail(rs.getString("EMAIL"));
-		    }else {
-		    	return null;
-		    }
-		} catch (Exception e) {
-			throw e;
-
+			return sqlSession.selectOne("spms.dao.MemberDao.exist",paramMap);
 		} finally {
-			try {if (rs != null) rs.close();} catch (Exception e) {}
-			try {if (stmt != null) stmt.close();} catch (Exception e) {}
-			try {if (connection != null) connection.close();} catch(Exception e) {}
+			sqlSession.close();
 		}
 	}
 
-	public List<MemberDTO> selectList() throws Exception {
-		Connection connection = null;
-		Statement stmt = null;
-		ResultSet rs = null;
+	public List<MemberDTO> selectList(HashMap<String,Object> paramMap) throws Exception {
+		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
-			connection = ds.getConnection();
-			stmt = connection.createStatement();
-			 rs = stmt.executeQuery(
-			          "SELECT MNO,MNAME,EMAIL,CRE_DATE" + 
-			              " FROM MEMBERS" +
-			          " ORDER BY MNO ASC");
-			 
-			ArrayList<MemberDTO> members = new ArrayList<MemberDTO>();
-			  while(rs.next()) {
-			    members.add(new MemberDTO()
-			    .setNo(rs.getInt("MNO"))
-		        .setName(rs.getString("MNAME"))
-	            .setEmail(rs.getString("EMAIL"))
-                .setCreatedDate(rs.getDate("CRE_DATE"))	);
-		      }
-			return members;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-		      try {if (rs != null) rs.close();} catch(Exception e) {}
-		      try {if (stmt != null) stmt.close();} catch(Exception e) {}
-		      try {if (connection != null) connection.close();} catch(Exception e) {}
+			return sqlSession.selectList("spms.dao.MemberDao.selectList",paramMap);
+		}finally {
+			sqlSession.close();
 		}
 	}
 
 	public int insert(MemberDTO member) throws Exception {
-		Connection connection = null;
-		PreparedStatement stmt = null;
+		SqlSession sqlSession = sqlSessionFactory.openSession();
 		
 		try {
-			connection = ds.getConnection();
-			stmt = connection.prepareStatement(
-					"INSERT INTO MEMBERS(EMAIL,PWD,MNAME,CRE_DATE,MOD_DATE)" + " VALUES (?,?,?,NOW(),NOW())");
-			stmt.setString(1, member.getEmail());
-			stmt.setString(2, member.getPassword());
-			stmt.setString(3, member.getName());
-			return stmt.executeUpdate();
-
-		} catch (Exception e) {
-			throw e;
-
+			return sqlSession.insert("spms.dao.MemberDao.insert",member);
 		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Exception e) {
-			}
-			try {if (connection != null) connection.close();} catch(Exception e) {}
+			sqlSession.close();
 		}
 	}
 
 	public int delete(int no) throws Exception {
-		Connection connection = null;
-		Statement stmt = null;
+		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
-			connection = ds.getConnection();
-			stmt = connection.createStatement();
-			return stmt.executeUpdate("DELETE FROM MEMBERS WHERE MNO=" + no);
-		} catch (Exception e) {
-			throw e;
+			int count = sqlSession.delete("spms.dao.MemberDao.delete",no);
+			sqlSession.commit();
+			return count;
 		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Exception e) {
-			}
-			try {if (connection != null) connection.close();} catch(Exception e) {}
+			sqlSession.close();
 		}
 	}
 
 	public int update(MemberDTO memberDto) throws Exception {
-		Connection connection = null;
-		PreparedStatement stmt = null;
+		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
-			connection = ds.getConnection();
-			stmt = connection.prepareStatement("UPDATE MEMBERS SET EMAIL=?,MNAME=?,MOD_DATE=now()" + " WHERE MNO=?");
-			stmt.setString(1, memberDto.getEmail());
-			stmt.setString(2, memberDto.getName());
-			stmt.setInt(3, memberDto.getNo());
-			return stmt.executeUpdate();
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Exception e) {
+			MemberDTO original = sqlSession.selectOne("spms.dao.MemberDao.selectOne",memberDto.getNo());
+			Hashtable<String,Object> paramMap = new Hashtable<String,Object>();
+			if(!memberDto.getName().equals(original.getName())) {
+				paramMap.put("name", memberDto.getName());
 			}
-			try {if (connection != null) connection.close();} catch(Exception e) {}
+			if(!memberDto.getEmail().equals(original.getEmail())) {
+				paramMap.put("email", memberDto.getEmail());
+			}
+			if(paramMap.size() > 0 ) {
+				paramMap.put("no", memberDto.getNo());
+				int count = sqlSession.update("spms.dao.MemberDao.update",paramMap);
+				sqlSession.commit();
+				return count;
+			}else {
+				return 0;
+			}
+		}  finally {
+			sqlSession.close();
 		}
 	}
 
 	public MemberDTO selectOne(int no) throws Exception {
-		Connection connection = null;
-		Statement stmt = null;
-		ResultSet rs = null;
+		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
-			connection = ds.getConnection();
-			stmt = connection.createStatement();
-			rs = stmt.executeQuery("SELECT MNO,EMAIL,MNAME,CRE_DATE FROM MEMBERS" + " WHERE MNO=" + no);
-			if (rs.next()) {
-				return new MemberDTO().setNo(rs.getInt("MNO")).setEmail(rs.getString("EMAIL"))
-						.setName(rs.getString("MNAME")).setCreatedDate(rs.getDate("CRE_DATE"));
-			} else {
-				throw new Exception("해당 번호의 회원을 찾을 수 없습니다.");
-			}
-		} catch (Exception e) {
-			throw e;
+			return sqlSession.selectOne("spms.dao.MemberDao.selectOne",no);
 		} finally {
-			try {
-				if (rs != null)
-					rs.close();
-			} catch (Exception e) {
-			}
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Exception e) {
-			}
-			try {if (connection != null) connection.close();} catch(Exception e) {}
+			sqlSession.close();
 		}
 	}
 }
