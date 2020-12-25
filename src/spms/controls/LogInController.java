@@ -33,13 +33,17 @@ public class LogInController implements Controller, DataBinding{
 		}else {
 			MemberDTO member = memberDao.exist(
 					loginInfo.getEmail(),
-					loginInfo.getPassword());
+					loginInfo.getPassword()); 
+			System.out.println("yyyyy"+member);
+			System.out.println(loginInfo.getEmail()+loginInfo.getPassword()+member );
+			
 			if(member != null) {
 				HttpSession session = (HttpSession)model.get("session");
 				session.setAttribute("member", member); System.out.println("6666"); 
 				return "redirect:../member/list.do";
 				
-			}else {
+			}
+			else {
 				return "/auth/LogInFail.jsp";
 			}
 		}

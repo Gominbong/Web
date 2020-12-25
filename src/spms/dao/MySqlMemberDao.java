@@ -23,7 +23,7 @@ public class MySqlMemberDao implements MemberDao{
 		HashMap<String,String> paramMap = new HashMap<String,String>();
 		paramMap.put("email",email);
 		paramMap.put("password", password);
-		
+		System.out.println("zzzzzz"+paramMap);
 		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
 			return sqlSession.selectOne("spms.dao.MemberDao.exist",paramMap);
@@ -31,7 +31,7 @@ public class MySqlMemberDao implements MemberDao{
 			sqlSession.close();
 		}
 	}
-
+	
 	public List<MemberDTO> selectList(HashMap<String,Object> paramMap) throws Exception {
 		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
@@ -43,10 +43,11 @@ public class MySqlMemberDao implements MemberDao{
 
 	public int insert(MemberDTO member) throws Exception {
 		SqlSession sqlSession = sqlSessionFactory.openSession();
-		
 		try {
 			return sqlSession.insert("spms.dao.MemberDao.insert",member);
+				
 		} finally {
+			sqlSession.commit();
 			sqlSession.close();
 		}
 	}
@@ -88,9 +89,10 @@ public class MySqlMemberDao implements MemberDao{
 
 	public MemberDTO selectOne(int no) throws Exception {
 		SqlSession sqlSession = sqlSessionFactory.openSession();
+		System.out.println("iiiiiiiiii"+no);
 		try {
 			return sqlSession.selectOne("spms.dao.MemberDao.selectOne",no);
-		} finally {
+		} finally {			
 			sqlSession.close();
 		}
 	}
