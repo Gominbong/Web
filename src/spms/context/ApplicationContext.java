@@ -29,7 +29,7 @@ public class ApplicationContext {
 		String key = null;
 		for(Class<?> clazz : list) {
 			key = clazz.getAnnotation(Component.class).value();
-			objTable.put(key, clazz.newInstance());
+			objTable.put(key, clazz.getDeclaredConstructor().newInstance());
 		}
 	}
 
@@ -77,7 +77,7 @@ public class ApplicationContext {
 			if(key.startsWith("jndi.")) {
 				objTable.put(key, ctx.lookup(value));
 			}else {
-				objTable.put(key,Class.forName(value).newInstance());
+				objTable.put(key,Class.forName(value).getDeclaredConstructor().newInstance());
 			}
 		}
 	}

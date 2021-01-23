@@ -14,7 +14,7 @@ public class ServletrequestDataBinder {
 		}
 		
 		Set<String> paramNames = request.getParameterMap().keySet();
-		Object dataObject = dataType.newInstance();
+		Object dataObject = dataType.getDeclaredConstructor().newInstance();
 		Method m = null;
 		
 		for (String paramName : paramNames) {
@@ -45,15 +45,15 @@ public class ServletrequestDataBinder {
 	private static Object createValueObject(Class<?> type, String value) {
 		// TODO Auto-generated method stub
 		if(type.getName().equals("int") || type == Integer.class) {
-			return new Integer(value);
+			return Integer.valueOf(value);
 		}else if (type.getName().equals("long") || type == Long.class) {
-			return new Long(value);
+			return Long.valueOf(value);
 		}else if (type.getName().equals("float") || type == Float.class) {
-			return new Float(value);
+			return Float.valueOf(value);
 		}else if (type.getName().equals("double") || type == Double.class) {
-			return new Double(value);
+			return Double.valueOf(value);
 		}else if(type.getName().equals("boolean") || type == Boolean.class) {
-			return new Boolean(value);
+			return Boolean.valueOf(value);
 		}else if (type == Date.class) {
 			return java.sql.Date.valueOf(value);
 		}else {
